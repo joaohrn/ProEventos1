@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -101,9 +102,11 @@ namespace ProEventos.API.Controllers
         {
             try
             {
-                if (await _eventoService.DeleteEvento(id)) return Ok("Deletado");
+                return await _eventoService.DeleteEvento(id)
+                ? Ok(new { message = "Deletado" })
+                : throw new Exception("Erro ao deletar evento");
 
-                return BadRequest("Item não deletado");
+
             }
             catch (Exception ex)
             {

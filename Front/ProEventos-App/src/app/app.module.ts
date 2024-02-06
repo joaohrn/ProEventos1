@@ -9,6 +9,9 @@ import { CollapseModule } from 'ngx-bootstrap/collapse';
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { ModalModule } from 'ngx-bootstrap/modal';
+import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
+import { defineLocale } from 'ngx-bootstrap/chronos';
+import { ptBrLocale } from 'ngx-bootstrap/locale';
 
 import { ToastrModule } from 'ngx-toastr';
 import { NgxSpinnerModule } from 'ngx-spinner';
@@ -30,6 +33,7 @@ import { UserComponent } from './components/users/user.component';
 import { LoginComponent } from './components/users/login/login.component';
 import { RegistrationComponent } from './components/users/registration/registration.component';
 
+defineLocale('pt-br', ptBrLocale);
 @NgModule({
 	declarations: [
 		AppComponent,
@@ -66,6 +70,7 @@ import { RegistrationComponent } from './components/users/registration/registrat
 			progressBar: true,
 		}),
 		NgxSpinnerModule,
+		BsDatepickerModule.forRoot(),
 	],
 	providers: [EventoService],
 	bootstrap: [AppComponent],
