@@ -1,4 +1,5 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Component, NgModule, OnInit, TemplateRef } from '@angular/core';
 import {
 	AbstractControl,
 	FormArray,
@@ -12,11 +13,11 @@ import { BsLocaleService } from 'ngx-bootstrap/datepicker';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import { Observable } from 'rxjs';
 import { Evento } from 'src/app/model/Evento';
 import { Lote } from 'src/app/model/Lote';
 import { EventoService } from 'src/app/services/evento.service';
 import { LoteService } from 'src/app/services/lote.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
 	selector: 'app-evento-detalhe',
@@ -30,6 +31,8 @@ export class EventosDetalheComponent implements OnInit {
 	form!: FormGroup;
 	evento = {} as Evento;
 	estadoSalvar = 'post' as keyof EventoService;
+	imagemURL = 'assets/upload_cloud.png';
+	file: File;
 
 	get modoEditar(): boolean {
 		return this.estadoSalvar === 'put';
@@ -40,11 +43,16 @@ export class EventosDetalheComponent implements OnInit {
 
 	get bsConfig(): any {
 		return {
-			dateInputFormat: 'DD/MM/YYYY hh:mm',
+			dateInputFormat: 'DD/MM/YYYY HH:mm',
 			returnFocusToInput: true,
 			containerClass: 'theme-default',
 			showWeekNumbers: false,
+			initCurrentTime: false,
+			withTimepicker: true,
 		};
+	}
+	get dataEventoValue() {
+		return this.f.dataEvento.value;
 	}
 	get bsConfigLote(): any {
 		return {
@@ -92,7 +100,7 @@ export class EventosDetalheComponent implements OnInit {
 			qtdPessoas: ['', [Validators.required, Validators.max(120000)]],
 			telefone: ['', Validators.required],
 			email: ['', [Validators.required, Validators.email]],
-			imagemURL: ['', Validators.required],
+			imagemURL: [''],
 			lotes: this.fb.array([]),
 		});
 	}
@@ -129,6 +137,12 @@ export class EventosDetalheComponent implements OnInit {
 					(evento: Evento) => {
 						this.evento = { ...evento };
 						this.form.patchValue(this.evento);
+						if (this.evento.imagemURL !== '') {
+							this.imagemURL =
+								environment.apiURL +
+								'resources/images/' +
+								this.evento.imagemURL;
+						}
 						this.carregarLotes();
 					},
 					(error: any) => {
@@ -140,16 +154,25 @@ export class EventosDetalheComponent implements OnInit {
 		}
 	}
 	public carregarLotes(): void {
-		this.loteService.getLotesByEventoId(this.eventoId).subscribe(
-			(lotesRetorno: Lote[]) => {
-				lotesRetorno.forEach((loteRetorno) => {
-					this.lotes.push(this.criarLote(loteRetorno));
-				});
-			},
-			(error: any) => {
-				this.toastr.error('Erro ao salvar lote.', 'Erro!');
-			}
-		);
+		if (this.lotes.length === 0) {
+			this.loteService
+				.getLotesByEventoId(this.eventoId)
+				.subscribe(
+					(lotesRetorno: Lote[]) => {
+						lotesRetorno.forEach((lote) => {
+							this.lotes.push(this.criarLote(lote));
+						});
+					},
+					(error: any) => {
+						this.toastr.error(
+							'Erro ao tentar carregar lotes',
+							'Erro'
+						);
+						console.error(error);
+					}
+				)
+				.add(() => this.spinner.hide());
+		}
 	}
 	public salvarEvento(): void {
 		this.spinner.show();
@@ -228,5 +251,34 @@ export class EventosDetalheComponent implements OnInit {
 	}
 	public declineDeleteLote(): void {
 		this.modalRef.hide();
+	}
+	public onFileChange(ev: any): void {
+		const reader = new FileReader();
+		reader.onload = (evento: any) =>
+			(this.imagemURL = evento.target.result);
+		this.file = ev.target.files;
+		reader.readAsDataURL(this.file[0]);
+
+		this.uploadImage();
+	}
+	public uploadImage(): void {
+		this.spinner.show();
+		this.eventoService
+			.postUpload(this.eventoId, this.file)
+			.subscribe(
+				() => {
+					this.carregarEvento();
+					this.toastr.success(
+						'Arquivo enviado com sucesso',
+						'Sucesso!'
+					);
+					console.log(this.f.imagemURL.value);
+				},
+				(error: any) => {
+					console.log(error);
+					this.toastr.error('Erro ao enviar arquivo', 'Erro!');
+				}
+			)
+			.add(() => this.spinner.hide());
 	}
 }

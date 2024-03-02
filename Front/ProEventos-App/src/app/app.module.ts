@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -34,6 +34,7 @@ import { UserComponent } from './components/users/user.component';
 import { LoginComponent } from './components/users/login/login.component';
 import { RegistrationComponent } from './components/users/registration/registration.component';
 import { LoteService } from './services/lote.service';
+import { TimepickerModule } from 'ngx-bootstrap/timepicker';
 
 defineLocale('pt-br', ptBrLocale);
 @NgModule({
@@ -74,6 +75,7 @@ defineLocale('pt-br', ptBrLocale);
 		NgxCurrencyModule,
 		NgxSpinnerModule,
 		BsDatepickerModule.forRoot(),
+		TimepickerModule.forRoot(),
 	],
 	providers: [EventoService, LoteService],
 	bootstrap: [AppComponent],
