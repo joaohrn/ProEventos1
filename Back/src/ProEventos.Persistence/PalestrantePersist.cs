@@ -15,7 +15,7 @@ namespace ProEventos.Persistence
         public PalestrantePersist(ProEventosContext context)
         {
             this._context = context;
-            
+
         }
 
         public async Task<Palestrante[]> GetAllPalestrantesAsync(bool includeEventos)
@@ -43,7 +43,7 @@ namespace ProEventos.Persistence
                     .ThenInclude(pe => pe.Evento);
             }
             query = query.AsNoTracking().OrderBy(e => e.Id)
-                         .Where(p => p.Nome.ToLower().Contains(nome.ToLower()));
+                         .Where(p => p.User.PrimeiroNome.ToLower().Contains(nome.ToLower()));
             return await query.ToArrayAsync();
         }
 
