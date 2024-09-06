@@ -53,7 +53,12 @@ namespace ProEventos.API.Controllers
                     return BadRequest("Usuario já existe");
                 var user = await _accountService.CreateAccountAsync(userDto);
                 if (user != null)
-                    return Ok(user);
+                    return Ok(new
+                    {
+                        userName = user.UserName,
+                        primeiroNome = user.PrimeiroNome,
+                        token = _tokenservice.CreateToken(user).Result
+                    });
                 return BadRequest("Usuario não criado, tente novamente mais tarde");
             }
             catch (Exception ex)
@@ -90,18 +95,26 @@ namespace ProEventos.API.Controllers
             }
         }
         [HttpPut("UpdateUser")]
-        [AllowAnonymous]
         public async Task<IActionResult> UpdateUser(UserUpdateDto userUpdateDto)
         {
             try
             {
+                if (userUpdateDto.UserName != User.GetUserName())
+                {
+                    return Unauthorized("Usuario invalido");
+                }
                 var user = await _accountService.GetUserByUserNameAsync(User.GetUserName());
                 if (user == null)
                     return Unauthorized("Usuario invalido.");
                 var updatedUser = await _accountService.UpdateAccountAsync(userUpdateDto);
                 if (updatedUser == null)
                     return NoContent();
-                return Ok(updatedUser);
+                return Ok(new
+                {
+                    userName = updatedUser.UserName,
+                    PrimeiroNome = updatedUser.PrimeiroNome,
+                    token = _tokenservice.CreateToken(updatedUser).Result
+                });
             }
             catch (Exception ex)
             {

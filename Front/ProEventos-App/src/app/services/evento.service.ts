@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Evento } from '../model/Evento';
@@ -8,6 +8,11 @@ import { environment } from 'src/environments/environment';
 @Injectable()
 export class EventoService {
 	baseURL = environment.apiURL + 'api/eventos';
+	tokenHeader = new HttpHeaders({
+		Authorization: `Bearer ${
+			JSON.parse(localStorage.getItem('user')).token
+		}`,
+	});
 	[key: string]: any;
 
 	constructor(private http: HttpClient) {}
@@ -17,7 +22,9 @@ export class EventoService {
 	}
 	public getEventosByTema(tema: string): Observable<Evento[]> {
 		return this.http
-			.get<Evento[]>(`${this.baseURL}/tema/${tema}`)
+			.get<Evento[]>(`${this.baseURL}/tema/${tema}`, {
+				headers: this.tokenHeader,
+			})
 			.pipe(take(1));
 	}
 	public getEventoById(id: number): Observable<Evento> {
@@ -28,7 +35,9 @@ export class EventoService {
 	}
 	public put(evento: Evento): Observable<Evento> {
 		return this.http
-			.put<Evento>(`${this.baseURL}/${evento.id}`, evento)
+			.put<Evento>(`${this.baseURL}/${evento.id}`, evento, {
+				headers: this.tokenHeader,
+			})
 			.pipe(take(1));
 	}
 	public deleteEvento(id: number): Observable<any> {

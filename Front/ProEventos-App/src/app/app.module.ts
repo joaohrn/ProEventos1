@@ -1,7 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -35,6 +35,9 @@ import { LoginComponent } from './components/users/login/login.component';
 import { RegistrationComponent } from './components/users/registration/registration.component';
 import { LoteService } from './services/lote.service';
 import { TimepickerModule } from 'ngx-bootstrap/timepicker';
+import { AccountService } from './services/Account.service';
+import { JwtInterceptor } from './interceptors/jwt.interceptor';
+import { HomeComponent } from './components/home/home.component';
 
 defineLocale('pt-br', ptBrLocale);
 @NgModule({
@@ -53,6 +56,7 @@ defineLocale('pt-br', ptBrLocale);
 		ContatosComponent,
 		DashboardComponent,
 		PerfilComponent,
+		HomeComponent,
 	],
 	imports: [
 		CommonModule,
@@ -77,8 +81,12 @@ defineLocale('pt-br', ptBrLocale);
 		BsDatepickerModule.forRoot(),
 		TimepickerModule.forRoot(),
 	],
-	providers: [EventoService, LoteService],
+	providers: [
+		AccountService,
+		EventoService,
+		LoteService,
+		{ provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+	],
 	bootstrap: [AppComponent],
-	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppModule {}
