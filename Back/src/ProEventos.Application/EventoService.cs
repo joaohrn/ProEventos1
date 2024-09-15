@@ -4,10 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
+using Microsoft.EntityFrameworkCore.Query;
 using ProEventos.Application.Contratos;
 using ProEventos.Application.Dtos;
 using ProEventos.Domain;
 using ProEventos.Persistence.Contratos;
+using ProEventos.Persistence.Models;
 
 namespace ProEventos.Application
 {
@@ -84,21 +86,26 @@ namespace ProEventos.Application
             }
         }
 
-        public async Task<EventoDto[]> GetAllEventosAsync(int userId, bool includePalestrantes = false)
+        public async Task<PageList<EventoDto>> GetAllEventosAsync(int userId, PageParams pageParams, bool includePalestrantes = false)
         {
-            Evento[] eventos = await _eventoPersist
-                .GetAllEventosAsync(userId, includePalestrantes);
-            if (eventos == null) return null;
-            return _mapper.Map<EventoDto[]>(eventos);
+            try
+            {
+                var eventos = await _eventoPersist.GetAllEventosAsync(userId, pageParams, includePalestrantes);
+                if (eventos == null) return null;
+                var result = _mapper.Map<PageList<EventoDto>>(eventos);
+                result.CurrentPage = eventos.CurrentPage;
+                result.TotalPages = eventos.TotalPages;
+                result.PageSize = eventos.PageSize;
+                result.TotalCount = eventos.TotalCount;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
         }
 
-        public async Task<EventoDto[]> GetAllEventosByTemaAsync(int userId, string Tema, bool includePalestrantes = false)
-        {
-            Evento[] eventos = await _eventoPersist
-                .GetAllEventosByTemaAsync(userId, Tema, includePalestrantes);
-            if (eventos == null) return null;
-            return _mapper.Map<EventoDto[]>(eventos);
-        }
 
         public async Task<EventoDto> GetEventoByIdAsync(int userId, int eventoId, bool includePalestrantes = false)
         {

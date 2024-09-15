@@ -12,6 +12,7 @@ import { ModalModule } from 'ngx-bootstrap/modal';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { defineLocale } from 'ngx-bootstrap/chronos';
 import { ptBrLocale } from 'ngx-bootstrap/locale';
+import { PaginationModule } from 'ngx-bootstrap/pagination';
 
 import { ToastrModule } from 'ngx-toastr';
 import { NgxCurrencyModule } from 'ngx-currency';
@@ -80,6 +81,7 @@ defineLocale('pt-br', ptBrLocale);
 		NgxSpinnerModule,
 		BsDatepickerModule.forRoot(),
 		TimepickerModule.forRoot(),
+		PaginationModule.forRoot(),
 	],
 	providers: [
 		AccountService,

@@ -19,7 +19,7 @@ export class AuthGuard implements CanActivate {
 			return true;
 		}
 		this.toastr.info('Usuario não logado.');
-		this.router.navigate(['/user/login']);
+		this.router.navigate(['/home']);
 		return false;
 	}
 }

@@ -24,7 +24,7 @@
 		>
 			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 				<ng-container
-					*ngIf="(accountService.currentUser$ | async) != null"
+					*ngIf="(accountService.currentUser$ | async) !== null"
 				>
 					<li class="nav-item" routerLinkActive="active">
 						<a class="nav-link" routerLink="dashboard">Dashboard</a>
@@ -65,7 +65,7 @@
 				>
 			</div>
 			<ul
-				*ngIf="(accountService.currentUser$ | async) != null"
+				*ngIf="(accountService.currentUser$ | async) !== null"
 				class="navbar-nav ml-auto"
 			>
 				<li

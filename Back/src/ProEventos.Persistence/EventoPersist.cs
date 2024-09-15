@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using ProEventos.Domain;
 using ProEventos.Persistence.Contextos;
 using ProEventos.Persistence.Contratos;
+using ProEventos.Persistence.Models;
 
 namespace ProEventos.Persistence
 {
@@ -16,7 +17,7 @@ namespace ProEventos.Persistence
         {
             this._context = context;
         }
-        public async Task<Evento[]> GetAllEventosAsync(int userId, bool includePalestrantes)
+        public async Task<PageList<Evento>> GetAllEventosAsync(int userId, PageParams pageParams, bool includePalestrantes)
         {
             IQueryable<Evento> query = _context.Eventos
                 .Include(e => e.Lotes)
@@ -27,25 +28,10 @@ namespace ProEventos.Persistence
                     .Include(e => e.PalestrantesEventos)
                     .ThenInclude(pe => pe.Palestrante);
             }
-            query = query.AsNoTracking().Where(e => e.UserId == userId).OrderBy(e => e.Id);
-            return await query.ToArrayAsync();
+            query = query.AsNoTracking().Where(e => e.UserId == userId && (e.Tema.ToLower().Contains(pageParams.Term.ToLower()) || e.Local.ToLower().Contains(pageParams.Term.ToLower()))).OrderBy(e => e.Id);
+            return await PageList<Evento>.CreateAsync(query, pageParams.PageNumber, pageParams.pageSize);
         }
 
-        public async Task<Evento[]> GetAllEventosByTemaAsync(int userId, string tema, bool includePalestrantes = false)
-        {
-            IQueryable<Evento> query = _context.Eventos
-                .Include(e => e.Lotes)
-                .Include(e => e.RedesSociais);
-            if (includePalestrantes)
-            {
-                query = query
-                    .Include(e => e.PalestrantesEventos)
-                    .ThenInclude(pe => pe.Palestrante);
-            }
-            query = query.AsNoTracking().OrderBy(e => e.Id)
-                         .Where(e => e.Tema.ToLower().Contains(tema.ToLower()) && e.UserId == userId);
-            return await query.ToArrayAsync();
-        }
         public async Task<Evento> GetEventoByIdAsync(int userId, int eventoId, bool includePalestrantes)
         {
             IQueryable<Evento> query = _context.Eventos
