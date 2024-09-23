@@ -1,113 +1,110 @@
 using System;
 using System.Data.Common;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using ProEventos.Application.Contratos;
+using ProEventos.Application.Dtos;
 using ProEventos.Domain;
 using ProEventos.Persistence.Contratos;
+using ProEventos.Persistence.Models;
 
 namespace ProEventos.Application
 {
     public class PalestranteService : IPalestranteService
     {
-        private readonly IGeralPersist _geralPersist;
         private readonly IPalestrantePersist _palestrantePersist;
-        public PalestranteService(IGeralPersist geralPersist, IPalestrantePersist palestrantePersist)
+        private readonly IMapper _mapper;
+
+        public PalestranteService(IPalestrantePersist palestrantePersist, IMapper mapper)
         {
-            this._palestrantePersist = palestrantePersist;
-            this._geralPersist = geralPersist;
-            
+            _palestrantePersist = palestrantePersist;
+            _mapper = mapper;
+
         }
-        public async Task<Palestrante> AddPalestrantes(Palestrante model)
+        public async Task<PalestranteDto> AddPalestrantes(int userId, PalestranteAddDto model)
         {
             try
             {
-                _geralPersist.Add<Palestrante>(model);
-                if(await _geralPersist.SaveChangesAsync()){
-                    return await _palestrantePersist.GetPalestranteByIdAsync(model.Id, false);
+                var palestrante = _mapper.Map<Palestrante>(model);
+
+                palestrante.UserId = userId;
+                _palestrantePersist.Add<Palestrante>(palestrante);
+                if (await _palestrantePersist.SaveChangesAsync())
+                {
+                    var palestranteRetorno = await _palestrantePersist.GetPalestranteByUserIdAsync(userId, false);
+                    return _mapper.Map<PalestranteDto>(palestranteRetorno);
                 }
                 return null;
             }
             catch (Exception ex)
             {
-                
+
                 throw new Exception(ex.Message);
             }
         }
 
-        public async Task<Palestrante> UpdatePalestrantes(int palestranteId, Palestrante model)
+        public async Task<PalestranteDto> UpdatePalestrantes(int userId, PalestranteUpdateDto model)
         {
             try
             {
-                var palestrante = _palestrantePersist.GetPalestranteByIdAsync(palestranteId, false);
-                if(palestrante == null) return null;
-                model.Id = palestrante.Id;
-                _geralPersist.Update<Palestrante>(model);
-                if(await _geralPersist.SaveChangesAsync()){
-                    return await _palestrantePersist.GetPalestranteByIdAsync(palestranteId, false);
+                var Palestrante = await _palestrantePersist.GetPalestranteByUserIdAsync(userId, false);
+                if (Palestrante == null) return null;
+                model.Id = Palestrante.Id;
+                model.UserId = userId;
+
+                _mapper.Map(model, Palestrante);
+
+                _palestrantePersist.Update<Palestrante>(Palestrante);
+                if (await _palestrantePersist.SaveChangesAsync())
+                {
+                    var palestranteRetorno = await _palestrantePersist.GetPalestranteByUserIdAsync(userId, false);
+                    return _mapper.Map<PalestranteDto>(palestranteRetorno);
                 }
                 return null;
             }
             catch (Exception ex)
             {
-                
+
                 throw new Exception(ex.Message);
             }
         }
 
-        public async Task<bool> DeletePalestrantes(int palestranteId)
+
+        public async Task<PageList<PalestranteDto>> GetAllPalestrantesAsync(PageParams pageParams, bool includeEventos = false)
         {
             try
             {
-                var palestrante = await _palestrantePersist.GetPalestranteByIdAsync(palestranteId, false);
+                var palestrantes = await _palestrantePersist.GetAllPalestrantesAsync(pageParams, includeEventos);
+                if (palestrantes == null) return null;
+                var result = _mapper.Map<PageList<PalestranteDto>>(palestrantes);
+                result.CurrentPage = palestrantes.CurrentPage;
+                result.TotalPages = palestrantes.TotalPages;
+                result.PageSize = palestrantes.PageSize;
+                result.TotalCount = palestrantes.TotalCount;
 
-                if(palestrante == null) throw new Exception("Palestrante não encontrado");
-                _geralPersist.Delete<Palestrante>(palestrante);
-
-                return await _geralPersist.SaveChangesAsync();
+                return result;
             }
             catch (Exception ex)
             {
-                
+
                 throw new Exception(ex.Message);
             }
         }
 
-        public async Task<Palestrante[]> GetAllPalestrantesAsync(bool includeEventos = false)
+        public async Task<PalestranteDto> GetPalestranteByUserIdAsync(int userId, bool includeEventos = false)
         {
             try
             {
-                return await _palestrantePersist.GetAllPalestrantesAsync(includeEventos);
-            }
-            catch (Exception ex)
-            {
-                
-                throw new Exception(ex.Message);
-            }
-        }
+                var palestrante = await _palestrantePersist.GetPalestranteByUserIdAsync(userId, includeEventos);
+                if (palestrante == null) return null;
 
-        public async Task<Palestrante[]> GetAllPalestrantesByNomeAsync(string nome, bool includeEventos = false)
-        {
-            try
-            {
-                return await _palestrantePersist.GetAllPalestrantesByNomeAsync(nome, includeEventos);
+                var result = _mapper.Map<PalestranteDto>(palestrante);
+                return result;
             }
             catch (Exception ex)
             {
-                
-                throw new Exception(ex.Message);
-            }
-        }
 
-        public async Task<Palestrante> GetPalestranteByIdAsync(int palestranteId, bool includeEventos = false)
-        {
-            try
-            {
-                return await _palestrantePersist.GetPalestranteByIdAsync(palestranteId, includeEventos);
-            }
-            catch (Exception ex)
-            {
-                
                 throw new Exception(ex.Message);
             }
         }

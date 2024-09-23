@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProEventos.API.Extensions;
+using ProEventos.API.helpers;
 using ProEventos.Application.Contratos;
 using ProEventos.Application.Dtos;
 
@@ -19,9 +20,13 @@ namespace ProEventos.API.Controllers
     {
         private readonly IAccountService _accountService;
         private readonly ITokenService _tokenservice;
+        private readonly IUtil _util;
+        private readonly string _destino = "perfil";
         public AccountController(IAccountService accountService,
-                                ITokenService tokenService)
+                                ITokenService tokenService,
+                                IUtil util)
         {
+            _util = util;
             _accountService = accountService;
             _tokenservice = tokenService;
 
@@ -121,6 +126,30 @@ namespace ProEventos.API.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError,
                     $"Erro ao tentar registrar usuario. Erro: {ex.Message}");
 
+            }
+        }
+        [HttpPost("upload-image")]
+        public async Task<IActionResult> UploadImage()
+        {
+            try
+            {
+                var user = await _accountService.GetUserByUserNameAsync(User.GetUserName());
+                if (user == null) return NoContent();
+
+                var file = Request.Form.Files[0];
+                if (file.Length > 0)
+                {
+                    _util.DeleteImage(user.ImagemURL, _destino);
+                    user.ImagemURL = await _util.SaveImage(file, _destino);
+                }
+                var userRetorno = await _accountService.UpdateAccountAsync(user);
+
+                return Ok(userRetorno);
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError,
+                    $"Erro ao tentar realizar upload de foto. Erro: {ex.Message}");
             }
         }
     }
