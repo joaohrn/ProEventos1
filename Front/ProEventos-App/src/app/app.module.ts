@@ -13,6 +13,7 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { defineLocale } from 'ngx-bootstrap/chronos';
 import { ptBrLocale } from 'ngx-bootstrap/locale';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
+import { TabsModule } from 'ngx-bootstrap/tabs';
 
 import { ToastrModule } from 'ngx-toastr';
 import { NgxCurrencyModule } from 'ngx-currency';
@@ -39,6 +40,11 @@ import { TimepickerModule } from 'ngx-bootstrap/timepicker';
 import { AccountService } from './services/Account.service';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
 import { HomeComponent } from './components/home/home.component';
+import { PerfilDetalheComponent } from './components/users/perfil/perfil-detalhe/perfil-detalhe.component';
+import { PalestranteListaComponent } from './components/palestrantes/palestrante-lista/palestrante-lista.component';
+import { PalestranteService } from './services/palestrante.service';
+import { PalestranteDetalheComponent } from './components/palestrantes/palestrante-detalhe/palestrante-detalhe.component';
+import { RedeSocialComponent } from './components/rede-social/rede-social.component';
 
 defineLocale('pt-br', ptBrLocale);
 @NgModule({
@@ -48,6 +54,9 @@ defineLocale('pt-br', ptBrLocale);
 		EventosDetalheComponent,
 		EventosListaComponent,
 		PalestrantesComponent,
+		PalestranteListaComponent,
+		PalestranteDetalheComponent,
+		RedeSocialComponent,
 		NavComponent,
 		DateTimeFormatPipe,
 		UserComponent,
@@ -57,6 +66,7 @@ defineLocale('pt-br', ptBrLocale);
 		ContatosComponent,
 		DashboardComponent,
 		PerfilComponent,
+		PerfilDetalheComponent,
 		HomeComponent,
 	],
 	imports: [
@@ -82,11 +92,13 @@ defineLocale('pt-br', ptBrLocale);
 		BsDatepickerModule.forRoot(),
 		TimepickerModule.forRoot(),
 		PaginationModule.forRoot(),
+		TabsModule.forRoot(),
 	],
 	providers: [
 		AccountService,
 		EventoService,
 		LoteService,
+		PalestranteService,
 		{ provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
 	],
 	bootstrap: [AppComponent],

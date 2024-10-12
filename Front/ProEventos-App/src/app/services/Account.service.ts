@@ -29,7 +29,7 @@ export class AccountService {
 	public logout(): void {
 		localStorage.removeItem('user');
 		this.currentUserSource.next(null);
-		this.currentUserSource.complete();
+		//this.currentUserSource.complete();
 	}
 	public setCurrentUser(user: User): void {
 		localStorage.setItem('user', JSON.stringify(user));
@@ -61,5 +61,15 @@ export class AccountService {
 					this.setCurrentUser(user);
 				})
 			);
+	}
+
+	postUpload(file: File): Observable<UserUpdate> {
+		const fileToUpload = file[0] as File;
+		const formData = new FormData();
+		formData.append('file', fileToUpload);
+
+		return this.http
+			.post<UserUpdate>(`${this.baseUrl}upload-image`, formData)
+			.pipe(take(1));
 	}
 }

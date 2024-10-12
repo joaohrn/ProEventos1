@@ -1,13 +1,11 @@
-import { PalestranteEvento } from "./PalestranteEvento";
-import { RedeSocial } from "./RedeSocial";
+import { UserUpdate } from './Identity/UserUpdate';
+import { PalestranteEvento } from './PalestranteEvento';
+import { RedeSocial } from './RedeSocial';
 
 export interface Palestrante {
-    id: number;
-    nome: string;
-    miniCurriculo: string;
-    imagemURL: string;
-    telefone: string;
-    email: string;
-    redesSociais: RedeSocial[];
-    palestrantesEventos: PalestranteEvento[];
+	id: number;
+	miniCurriculo: string;
+	user: UserUpdate;
+	redesSociais: RedeSocial[];
+	palestrantesEventos: PalestranteEvento[];
 }

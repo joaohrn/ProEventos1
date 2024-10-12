@@ -5,10 +5,10 @@ import {
 	HttpEvent,
 	HttpInterceptor,
 } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { AccountService } from '../services/Account.service';
 import { User } from '../model/Identity/User';
-import { take } from 'rxjs/operators';
+import { catchError, take } from 'rxjs/operators';
 
 @Injectable()
 export class JwtInterceptor implements HttpInterceptor {
@@ -23,7 +23,7 @@ export class JwtInterceptor implements HttpInterceptor {
 		this.accountService.currentUser$.pipe(take(1)).subscribe((user) => {
 			currentUser = user;
 
-			if (currentUser != null) {
+			if (currentUser) {
 				request = request.clone({
 					setHeaders: {
 						Authorization: `Bearer ${currentUser.token}`,
@@ -32,6 +32,13 @@ export class JwtInterceptor implements HttpInterceptor {
 			}
 		});
 
-		return next.handle(request);
+		return next.handle(request).pipe(
+			catchError((error) => {
+				if (error) {
+					localStorage.removeItem('user');
+				}
+				return throwError(error);
+			})
+		);
 	}
 }
